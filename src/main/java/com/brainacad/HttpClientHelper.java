@@ -4,21 +4,37 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.http.protocol.HTTP.USER_AGENT;
 
 public class HttpClientHelper {
 
+     static private Map<String, String> headers;
+
+    static {
+        headers = new HashMap<>(); //Создаём переменую headers типа Map
+        headers.put(USER_AGENT, "My-Test-User-Agent");
+    }
+
     public static HttpResponse get(String endpointUrl, String parameters){
-       //TODO: написать метод для GET запроса с хедерами по умолчанию
-       return null;
+
+        HttpResponse response = null;
+        try {
+            response = get(endpointUrl, parameters, headers);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return response;
     }
 
     //REST GET запрос
@@ -34,16 +50,21 @@ public class HttpClientHelper {
         }
 
         //выполняем запрос в HTTP клиенте и получаем ответ
-        HttpResponse response = client.execute(request);
-
         //возвращаем response
-        return response;
+        return client.execute(request);
     }
 
 
-    public static HttpResponse post(String endpointUrl, String parameters){
-        //TODO: написать метод для POST запроса с хедерами по умолчанию
-        return null;
+    public static HttpResponse post(String endpointUrl, String requestBody){
+
+        HttpResponse response = null;
+        try {
+            response = post(endpointUrl, requestBody, headers);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return response;
     }
 
     public static HttpResponse post(String endpointUrl, String body, Map<String, String> headers) throws IOException{
@@ -61,10 +82,8 @@ public class HttpClientHelper {
         post.setEntity(new StringEntity(body));
 
         //выполняем запрос в HTTP клиенте и получаем ответ
-        HttpResponse response = client.execute(post);
-
         //возвращаем response
-        return response;
+        return client.execute(post);
     }
 
 
@@ -83,5 +102,39 @@ public class HttpClientHelper {
         return result.toString();
     }
 
+    // https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/PUT
+    public static HttpResponse put(String endpointUrl, String requestBody) {
+
+        HttpResponse response = null;
+        try {
+            response = put(endpointUrl, requestBody, headers);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return response;
+    }
+
     //TODO: допишите методы для запросов PUT, PATCH и DELETE
+
+    private static HttpResponse put(String endpointUrl, String body, Map<String, String> headers) throws IOException {
+        //Создаём экземпляр HTTP клиента
+        HttpClient client = HttpClientBuilder.create().build();
+        //Создаём HTTP POST запрос из URL и параметров
+        HttpPut put = new HttpPut(endpointUrl);
+
+        //добавляем в запрос необходимые хедеры
+        for(String headerKey:headers.keySet()) {
+            put.addHeader(headerKey, headers.get(headerKey));
+        }
+
+        //добавляем к запросу тело запроса
+        put.setEntity(new StringEntity(body));
+
+        //выполняем запрос в HTTP клиенте и получаем ответ
+        //возвращаем response
+        return client.execute(put);
+    }
+
+
 }

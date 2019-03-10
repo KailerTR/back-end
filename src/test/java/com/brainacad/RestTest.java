@@ -3,9 +3,10 @@ package com.brainacad;
 import org.apache.http.HttpResponse;
 import org.junit.Assert;
 import org.junit.Test;
+
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+
+import static com.brainacad.HttpClientHelper.*;
 
 
 public class RestTest{
@@ -13,18 +14,14 @@ public class RestTest{
     private static final String URL="https://reqres.in/";
 
     @Test//GET метод
-    public void checkGetResponseStatusCode() throws IOException {
-        String endpoint="/api/users";
+    public void checkGetResponseStatusCode(){
+        String endpoint="/api/users/2";
 
         //TODO: Избавится он хедеров в тесте добавив методы с хедерами по умолчанию в класс HttpClientHelper
-        //Создаём переменую headers типа Map
-        Map<String, String> headers=new HashMap<>();
-        //Добавляем в headers наш заголовок
-        headers.put("User-Agent", "My-Test-User-Agent");
-
         //Выполняем REST GET запрос с нашими параметрами
         // и сохраняем результат в переменную response.
-        HttpResponse response = HttpClientHelper.get(URL+endpoint,"page=2", headers);
+
+        HttpResponse response = get(URL+endpoint,"page=2");
 
         //получаем статус код из ответа
         int statusCode = response.getStatusLine().getStatusCode();
@@ -37,37 +34,27 @@ public class RestTest{
         String endpoint="/api/users";
 
         //TODO: Избавится он хедеров в тесте добавив методы с хедерами по умолчанию в класс HttpClientHelper
-        //Создаём переменую headers типа Map
-        Map<String, String> headers=new HashMap<>();
-        //Добавляем в headers наш заголовок
-        headers.put("User-Agent", "My-Test-User-Agent");
 
         //Выполняем REST GET запрос с нашими параметрами
         // и сохраняем результат в переменную response.
-        HttpResponse response = HttpClientHelper.get(URL+endpoint,"page=2", headers);
+        HttpResponse response = get(URL+endpoint,"page=2");
 
         //Конвертируем входящий поток тела ответа в строку
-        String body=HttpClientHelper.getBodyFromResponse(response);
+        String body = HttpClientHelper.getBodyFromResponse(response);
         System.out.println(body);
         Assert.assertNotEquals("Body shouldn't be null", null, body);
     }
 
     @Test//POST метод
-    public void checkPostResponseStatusCode() throws IOException {
+    public void checkPostResponseStatusCode(){
         String endpoint="/api/users";
-
-        //TODO: Избавится он хедеров в тесте добавив методы с хедерами по умолчанию в класс HttpClientHelper
-        //Создаём переменую headers типа Map
-        Map<String, String> headers=new HashMap<>();
-        //Добавляем в headers наш заголовок
-        headers.put("User-Agent", "My-Test-User-Agent");
 
         //создаём тело запроса
         String requestBody="{\"name\": \"morpheus\",\"job\": \"leader\"}";
 
         //Выполняем REST POST запрос с нашими параметрами
         // и сохраняем результат в переменную response.
-        HttpResponse response = HttpClientHelper.post(URL+endpoint,requestBody, headers);
+        HttpResponse response = post(URL+endpoint,requestBody);
 
         //получаем статус код из ответа
         int statusCode = response.getStatusLine().getStatusCode();
@@ -79,18 +66,12 @@ public class RestTest{
     public void checkPostResponseBodyNotNull() throws IOException {
         String endpoint="/api/users";
 
-        //TODO: Избавится он хедеров в тесте добавив методы с хедерами по умолчанию в класс HttpClientHelper
-        //Создаём переменую headers типа Map
-        Map<String, String> headers=new HashMap<>();
-        //Добавляем в headers наш заголовок
-        headers.put("User-Agent", "My-Test-User-Agent");
-
         //создаём тело запроса
         String requestBody="{\"name\": \"morpheus\",\"job\": \"leader\"}";
 
         //Выполняем REST POST запрос с нашими параметрами
         // и сохраняем результат в переменную response.
-        HttpResponse response = HttpClientHelper.post(URL+endpoint,requestBody, headers);
+        HttpResponse response = post(URL+endpoint,requestBody);
 
         //Конвертируем входящий поток тела ответа в строку
         String body=HttpClientHelper.getBodyFromResponse(response);
@@ -100,5 +81,30 @@ public class RestTest{
 
     //TODO: напишите по тесткейсу на каждый вариант запроса на сайте https://reqres.in
     //TODO: в тескейсах проверьте Result Code и несколько параметров из JSON ответа (если он есть)
+
+    @Test
+    public void checkUserInfoUpdate() throws IOException {
+        String endpoint="/api/users/2";
+        HttpResponse response = get(URL+endpoint, null);
+        String body = getBodyFromResponse(response);
+        System.out.println("Data before: " + body);
+
+        String requestBody="{\"name\": \"morpheus\",\"job\": \"zion resident\"}";
+
+        response = put(URL+endpoint,requestBody);
+        body = getBodyFromResponse(response);
+        System.out.println(body);
+
+        response = get(URL+endpoint, null);
+        body = getBodyFromResponse(response);
+        System.out.println("Data after: " + body);
+
+        //Assert.assertEquals("Name is correct?", "Janet", stringFromJSONByPath(body, "$.data.first_name"));
+        //Assert.assertEquals("Name is correct?", "Janet", getUserFirstName(body));
+
+       // Assert.assertEquals("Job is correct", "zion resident", stringFromJSONByPath(body, "$.data.job"));
+       // Assert.assertEquals("Job is correct", "zion resident", getUserJob(body));
+    }
+
 
 }
